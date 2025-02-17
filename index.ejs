@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/web3/1.8.1/web3.min.js"></script>
+    <style>
+    
+        .navbar-custom {
+            background-color: rgb(160, 174, 217);
+        }
+            
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 12rem; /* Reduced gap for a more compact layout */
+            padding: 2rem 1.5rem; /* Added more padding on the sides */
+            justify-items: center; /* Centers the content in each grid item */
+            grid-auto-rows: 1fr; /* Ensures that all items are evenly spaced */
+        }
+
+        /* Health box as a card style */
+        .Health-box {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+            cursor: pointer;
+            width: 20%; /* Ensures the card takes full width within the grid */
+            display: flex;
+            flex-direction: column; /* Align the content vertically */
+        }
+
+
+        .Health-box:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .Health-box img {
+            width: 10%;
+            height: 5px;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+            display: block;
+            border-bottom: 1px solid #eee; /* Adds a dividing line under the image */
+        }
+
+        .Health-box:hover img {
+            transform: scale(1.05);
+        }
+
+        .Health-name {
+            padding: 1rem;
+            background: rgb(225, 222, 222);
+        }
+
+        .Health -name h4 {
+            margin: 0;
+            color: var(--text-color);
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .page-header {
+            text-align: center;
+            padding: 2rem 0;
+            color: var(--primary-color);
+        }
+
+        .stats-container {
+            background: rgb(160, 174, 217);
+            border-radius: 2px;
+            padding: 1.5rem;
+            margin: 2rem 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .account-badge {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .grid-container {
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+                gap: 1rem;
+            }
+        }
+
+        .loading-indicator {
+            padding: 20px;
+            text-align: center;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            margin: 20px 0;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        #status {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .success {
+            background-color: #dff0d8;
+            color: #3c763d;
+        }
+        .error {
+            background-color: #f2dede;
+            color: #a94442;
+        }
+
+        .vertical-center {
+            display: block;
+            margin: 10px auto;
+            padding: 8px 20px;
+            background-color: rgb(17, 38, 103);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .vertical-center:hover {
+            background-color: lightblue;
+        }
+
+        .vertical-center {
+            margin: 10px auto;  /* Adds some vertical spacing and centers horizontally */
+        }
+
+        .vertical-center {
+            display: block;
+            margin: 10px auto;
+        }
+
+        #hiddenAddButton {
+            display: none;  /* Hides the button */
+        }
+    </style>
+    <title>Healthsync Data web</title>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-sm navbar-custom">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">HealthSync</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" 
+                       data-bs-target="#collapsibleNavbar">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="collapsibleNavbar">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/addHealth">Add Patient Data</a>
+                    </li>
+                   
+                </ul>
+            </div>
+            <span class="navbar-brand mb-0 h1">Account: <%= acct %></span>
+        </div>
+    </nav>
+    <title>HealthSync</title>
+</head>
+<body>
+    <div class="container">
+        <% if (!status) { %>        
+            <div class="page-header">
+                <h1>Welcome to Healthsync Patient Data Web</h1>
+            </div>
+
+            <div class="stats-container">
+                <div class="row text-center">
+                    <div class="col-md-6">
+                        <h4>Available Health </h4>
+                        <h2><%= cnt %></h2>
+                    </div>
+                    <div class="col-md-6">
+                        <h4>Current Account</h4>
+                        <h2><%= acct %></h2>
+                    </div>
+                </div>
+            </div>
+            <h2 class="text-center mb-4">HealthSync Gallery</h2>
+ 
+            <div class="grid-container" id="HealthSyncGallery">
+                  <% for(let i=0; i <Healths.length; i++) { %>
+                    <div class="Health -box">  
+                        <a href="/Health/<%= Healths[i].id %>" class="text-decoration-none">
+                            
+                            <img src="images/<%= Healths[i].HealthInfo.name %>.jpeg" alt="<%= Healths[i].HealthInfo.name %>">
+                            <div class="Health-name">
+                                <h4><%= Healths[i].HealthInfo.name %></h4>
+                                <h4> Price: <%= Healths[i].HealthInfo.price %> Eth </h4>
+                                <% if ( Healths[i].ownership.length) {
+                                    let j = Healths[i].ownership.length-1;
+                                %>
+                                    <h4 style="font-size:1vw"> Health  Owner: <%= Healths[i].ownership[j].ownerId %> </h4>
+                                   
+                                <% } %>
+                                <h4> Health Status: <% if (JSON.parse(Healths[i].HealthInfo.status)) { %>
+                                    Available
+                                    
+                                    <form action="/buyHealth/<%= Healths[i].id %>" method="POST">
+                                        <input type="hidden" name="HealthCost" id="HealthCost" value="<%= Healths[i].HealthInfo ? Healths[i].HealthInfo.price : '' %>">
+                                        <button class="vertical-center" type="submit">Buy</button>
+                                    </form>
+                                    
+                                    <%} else { %>
+                                        <h4> sold out </h4>
+                                <% } %>  </h4>
+                               
+                            </div>
+                        </a>
+                    </div>
+                <% } %>
+            </div>  
+
+            
+        <% } else { %>
+            <h1> Connect to Ganache </h1>
+            
+           
+         <% } %>
+         <button id="connectButton">Connect to MetaMask</button>
+         
+         <div id="status"></div>
+    </div>
+    <button id="hiddenAddButton" >Hidden Add Button</button>
+
+    <script>  
+        //onclick="alert('Hidden button clicked!')
+        const connectButton = document.getElementById('connectButton');
+        const hiddenAddButton = document.getElementById('hiddenAddButton');
+        const statusDiv = document.getElementById('status');    
+                      
+   
+        document.addEventListener('DOMContentLoaded', () => {   
+            hiddenAddButton.addEventListener('click', addHealthData); 
+            if (connectButton) {
+                connectButton.addEventListener('click', connectWallet);  
+            }
+   
+            // In index.ejs, update the connectWallet function:
+            async function connectWallet() {
+                // Check if MetaMask is installed
+                if (typeof window.ethereum !== 'undefined') {
+                    try {   // Request account access
+                            const accounts = await window.ethereum.request({ 
+                            method: 'eth_requestAccounts' 
+                        });                        
+                        let web3 = new Web3(window.ethereum);
+                        const address = accounts[0];                        
+                        // Get network information
+                        const networkId = await web3.eth.net.getId();
+                        const chainId = await web3.eth.getChainId();
+                        //console.log(web3);
+                        const HealthSyncJson = await fetch(`../build/HealthSync.json`);
+                        if (!HealthSyncJson.ok) {
+                            throw new Error("Failed to fetch contract JSON");
+                        } 
+                        const contractData = await HealthSyncJson.json();
+                        const contractAddress = contractData.networks[networkId]?.address;
+                        if (!contractAddress) {
+                            throw new Error('Health  contract not deployed to detected network');
+                        }                                            
+                        //Initialize the contract
+                        let contractInfo = new web3.eth.Contract(contractData.abi, contractAddress);
+                       
+                        console.log(contractInfo);
+                        //console.log(contractInfo.methods);
+                        const cnt = await contractInfo.methods.getNoOfHealth().call();
+                        console.log("Health  count from blockchain:" +  cnt.toString());
+                        // read Health  info based on count of the number of Health  
+                        const Healths = [];
+                        for (let i = 1; i <= cnt; i++) {                           
+                            const [ HealthInfo,  ownershipInfo,  vaccinationInfo,  trainingInfo ] = 
+                            await Promise.all([
+                                contractInfo.methods.getHealthInfo(i).call(),
+                                contractInfo.methods.getOwnershipRecords(i).call(),
+                                contractInfo.methods.getVaccinationRecords(i).call(),         
+                                contractInfo.methods.getTrainingRecords(i).call(),         
+                            ]);
+                            // Create an object with named keys instead of an array
+                            const HealthData = { HealthInfo, ownershipInfo, vaccinationInfo, trainingInfo };
+                            Healths.push(HealthData);
+                        }   
+                        console.log(Healths);                       
+                        // Send only necessary connection details to server
+                        const response = await fetch('/web3ConnectData', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',                              
+                            },
+                            //credentials: 'same-origin', // Helps prevent CSRF
+                            body: JSON.stringify({
+                                HealthDataRead : Healths,
+                                contractAddress : address,
+                                acct : address,
+                                nHealths : cnt
+                            })
+                        });
+                        console.log("fetch done");
+                        console.log(response);
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        const data = await response.json();                                        
+                        if (data.success) {
+                            console.log("success reading data ")
+                            if (connectButton) {
+                                statusDiv.className = 'success';
+                                statusDiv.innerHTML = `Connected to MetaMask!<br>
+                                    Address: ${address}<br>
+                                    Network ID: ${networkId}<br>
+                                    Chain ID: ${chainId}
+                                `;
+                                connectButton.disabled = true;
+                                connectButton.textContent = 'Connected';          
+                            }                  
+                            // Listen for account changes
+                            window.ethereum.on('accountsChanged', handleAccountsChanged);
+                            // Listen for chain changes
+                            window.ethereum.on('chainChanged', handleChainChanged);
+                            window.location.reload();
+                        } else {
+                            throw new Error(data.message || 'Failed to connect to blockchain');
+                        }
+                    } catch (error) {
+                        statusDiv.className = 'error';
+                        statusDiv.textContent = `Error: ${error.message}`;
+                    }
+                } else {
+                    statusDiv.className = 'error';
+                    statusDiv.innerHTML = 'MetaMask is not installed. Please install MetaMask to continue.';
+                }        
+            }
+
+            function handleAccountsChanged(accounts) {
+                if (accounts.length === 0) {
+                    statusDiv.className = 'error';
+                    statusDiv.textContent = 'Please connect to MetaMask.';
+                    connectButton.disabled = false;
+                    connectButton.textContent = 'Connect to MetaMask';
+                } else {
+                    statusDiv.textContent = `Connected to: ${accounts[0]}`;
+                }
+            }
+
+            function handleChainChanged(_chainId) {
+                // Reload the page when the chain changes
+                window.location.reload();
+            }
+            
+            
+            (async function() {
+            try {
+                    console.log('<%= addStatus%>')    
+                    // Get the hidden button and the trigger button
+                    let statusToAdd = `<%= addStatus%>`;                   
+                    if ( statusToAdd ) {
+                        console.log("add function ");
+                        //set the addFunction back to null
+                        // Send only necessary connection details to server
+                        const response = await fetch('/setFunc', {
+                                    method: 'POST',
+                                    headers: {'Content-Type': 'application/json',  },                           
+                                    body: JSON.stringify({  })
+                        });
+                        const data = await response.json();                                        
+                        if (data.success) {
+                            //trigger the button 
+                            hiddenAddButton.click();
+                        } 
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                }
+        })();
+
+
+       async function addHealthData() {
+                console.log("addHealthData");
+                console.log(`<%= addObject%>`);
+                const funcToAddObject = `<%= addFunction%>`;
+                 //alert("add Health  Data");
+                 statusDiv.enabled = true;
+                if (typeof window.ethereum !== 'undefined') {
+                    try {   // Request account access
+                        const accounts = await window.ethereum.request({ 
+                            method: 'eth_requestAccounts' 
+                        });                        
+                        let web3 = new Web3(window.ethereum);
+                        const address = accounts[0];                        
+                        // Get network information
+                        const networkId = await web3.eth.net.getId();
+                        const chainId = await web3.eth.getChainId();
+                        //console.log(web3);
+                        const HealthSyncJson = await fetch(`../build/HealthSync.json`);
+                        if (!HealthSyncJson.ok) {
+                            throw new Error("Failed to fetch contract JSON");
+                        } 
+                        const contractData = await HealthSyncJson.json();
+                        const contractAddress = contractData.networks[networkId]?.address;
+                        if (!contractAddress) {
+                            throw new Error('Health  contract not deployed to detected network');
+                        } 
+                        let contractInfo = new web3.eth.Contract(contractData.abi, contractAddress);
+                        const cnt = await contractInfo.methods.getNoOfHealth().call();
+                        console.log(cnt);
+                        
+                        dataToAdd = `<%= addObject %>`;
+                        console.log(dataToAdd);
+                        const cleanData = dataToAdd.replace(/^"|"$/g, '');
+
+                        // Decode HTML entities
+                        const decodedString = new DOMParser()
+                            .parseFromString(`<!doctype html><body>${cleanData}`, 'text/html')
+                            .body.textContent;
+
+                        try {
+                            const HealthData = JSON.parse(decodedString);
+                            console.log('Parsed data:', HealthData);
+                            console.log(funcToAddObject);
+                            switch (funcToAddObject) {
+                                case "addHealthInfo":
+                                    console.log("addHealthInfo");
+                                    // First estimate gas for the registration
+                                    const registerGasEstimate = await contractInfo.methods.registerHealth ()
+                                                    .estimateGas({ from: address });
+
+                                    console.log('Estimated gas for registration:', registerGasEstimate);
+                                    // Register Health  on blockchain
+                                    const regData = await contractInfo.methods.registerHealth ().send({ 
+                                                                from: address,
+                                                                gas: String(Math.ceil(Number(registerGasEstimate) * 1.2))
+                                                            });
+                                    console.log(regData);
+                                    if (!regData) {
+                                    throw new Error('Failed to register Health  on blockchain' );
+                                    };   
+                                    //Get current Health  count
+                                    const HealthCount = await contractInfo.methods.getNoOfHealth().call();
+
+                                    // Estimate gas for transaction
+                                    const gasEstimate = await contractInfo.methods
+                                                            .addHealthInfo(HealthCount, HealthData.HealthId, HealthData.name, 
+                                                            HealthData.gender, HealthData.dob, HealthData.price)
+                                                            .estimateGas({ from: address });
+
+                                    // Add Health  info to blockchain
+                                    const addHealthTransaction = await contractInfo.methods
+                                                                .addHealthInfo(HealthCount, HealthData.HealthId, HealthData.name, 
+                                                                HealthData.gender, HealthData.dob, HealthData.price)
+                                                                .send({ 
+                                                                from: address, 
+                                                                gas: String(Math.ceil(Number(gasEstimate) * 1.2)) 
+                                                                // Add 20% buffer to gas estimate
+                                                                });
+                                    // Log successful transaction
+                                    console.log('Health  added successfully:', {
+                                    transactionHash: addHealthTransaction.transactionHash,    HealthCount: HealthCount.toString()
+                                    });   
+                                    break;
+
+                                case "addVaccination":
+                                    console.log("addVaccination");
+                                     // First estimate gas for the registration
+                                    const gasEstimateVacc = await contractInfo.methods.
+                                                                 addVaccinationRecord(Number(HealthData.HealthId), HealthData.vaccine, 
+                                                                 HealthData.dateOfVaccine, HealthData.doctor, HealthData.clinic, 
+                                                                 HealthData.contact, HealthData.emailId)
+                                                                        .estimateGas({ from: address });
+                                    console.log('Estimated gas for registration:', gasEstimateVacc);
+                                    // Add owner info or the  Health  on blockchain
+                                    const vaccineDataTransactionHash = await contractInfo.methods.addVaccinationRecord(Number(HealthData.HealthId),
+                                    HealthData.vaccine,  HealthData.dateOfVaccine, HealthData.doctor, HealthData.clinic, 
+                                    HealthData.contact, HealthData.emailId ).send ({
+                                                                                from: address,
+                                                                                gas: String(Math.ceil(Number(gasEstimateVacc) * 1.2))
+                                                                                });
+                                    // Log successful transaction
+                                    console.log('Health  Vaccination added successfully:', {
+                                        transactionHash: vaccineDataTransactionHash.transactionHash });
+                                    break;
+
+                                case "addTraining":
+                                    console.log("addTraining");
+                                     // First estimate gas for the registration
+                                    const gasEstimateTraining = await contractInfo.methods
+                                                                .addTrainingRecord(Number(HealthData.HealthId), 
+                                                                HealthData.trainingType, HealthData.name, HealthData.org, 
+                                                                HealthData.contact, HealthData.trainingDate, HealthData.progress)
+                                                                            .estimateGas({ from: address });                                    
+                                        console.log('Estimated gas for registration:', gasEstimateTraining);
+                                        // Add owner info or the  Health  on blockchain
+                                        const trainingDataTransactionHash = await contractInfo.methods.addTrainingRecord(Number(HealthData.HealthId), 
+                                        HealthData.trainingType, HealthData.name, HealthData.org, 
+                                        HealthData.contact, HealthData.trainingDate, HealthData.progress)
+                                                                                        .send({
+                                                                                        from: address,
+                                                                                        gas: String(Math.ceil(Number(gasEstimateTraining) * 1.2))
+                                                                                        });
+                                        // Log successful transaction
+                                        console.log('Health  Training added successfully:', {
+                                            transactionHash: trainingDataTransactionHash.transactionHash });
+                                    break;
+
+                                case "addOwner":
+                                    console.log("addOwner");
+                                    // First estimate gas for the registration
+                                    const gasEstimateOwner = await contractInfo.methods
+                                                                        .addOwnerShipRecord(Number(HealthData.HealthId), 
+                                                                        HealthData.name, HealthData.transferDate, 
+                                                                        HealthData.contact, HealthData.emailId)
+                                                                        .estimateGas({ from: address });
+                                    console.log('Estimated gas for registration:', gasEstimateOwner);
+                                    
+                                    // Add owner info or the  Health  on blockchain
+                                    const ownerDataTransactionHash = await contractInfo.methods.addOwnerShipRecord(Number(HealthData.HealthId),
+                                    HealthData.name, HealthData.transferDate, 
+                                    HealthData.contact, HealthData.emailId)
+                                                            .send ({
+                                                                from: address,
+                                                                gas: String(Math.ceil(Number(gasEstimateOwner) * 1.2))
+                                                            });
+                                    // Log successful transaction
+                                    console.log('Health  Owner added successfully:', {
+                                            transactionHash: ownerDataTransactionHash.transactionHash });
+                                    break;
+
+                                case "buyHealth":
+                                    console.log("buyHealth");
+                                    console.log(HealthData.HealthId);
+                                    const priceInWei = web3.utils.toWei(HealthData.HealthCost.toString(), 'Ether');
+    
+                                  
+                                    const buyHealthTransactionHash = await contractInfo.methods.purchaseHealth(HealthData.HealthId)
+                                                                    .send ({
+                                                                        from: address,
+                                                                        value:priceInWei                                                                      
+                                                                    }) .once('receipt', (receipt) => {
+                                                                            console.log(receipt);
+                                                                    });
+                                    // Log successful transaction
+                                    console.log('Buy Health  successfully:', {
+                                            transactionHash: buyHealthTransactionHash.transactionHash });
+                                    var date_time = new Date();
+
+                                     // First estimate gas for the registration
+                                     const gasEstimateOwnerbuy = await contractInfo.methods
+                                                                        .addOwnerShipRecord(Number(HealthData.HealthId), 
+                                                                        "updatedOwner", date_time.toString, "phone", "email")
+                                                                        .estimateGas({ from: address });
+                                    //console.log('Estimated gas for registration:', gasEstimateOwnerbuy);
+                                    
+                                    // Add owner info or the  Health  on blockchain
+                                    const ownerDataTransactionHashBuy = await contractInfo.methods.addOwnerShipRecord(Number(HealthData.HealthId),
+                                                                "updatedOwner", date_time.toString, "phone", "email")
+                                                            .send ({
+                                                                from: address,
+                                                                gas: String(Math.ceil(Number(gasEstimateOwnerbuy) * 1.2))
+                                                            });
+                                    // Log successful transaction
+                                    console.log('Health  Owner added successfully:', {
+                                            transactionHash: ownerDataTransactionHashBuy.transactionHash });
+                                    break;
+
+                                default:
+                                    throw new Error('add Data not Detected');
+                                    break;
+                            }
+                            connectWallet();              
+                        } catch (error) {
+                                console.log('Error parsing:', error);
+                                console.log('Decoded string:', decodedString);
+                        }               
+                    } catch (error) {
+                        statusDiv.className = 'error';
+                        statusDiv.textContent = `Error: ${error.message}`;
+                    }
+                } else {
+                    statusDiv.className = 'error';
+                    statusDiv.innerHTML = 'MetaMask is not installed. Please install MetaMask to continue.';
+                }   
+            }            
+       });
+    </script>
+</body>
+</html>
