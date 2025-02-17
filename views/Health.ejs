@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .navbar-custom {
+            background-color: rgb(160, 174, 217);
+        }
+       
+        .form-container {
+            max-width: 600px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-title {
+            color: var(--primary-color);
+            margin-bottom: 2rem;
+            font-weight: 600;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            color: var(--text-color);
+        }
+
+        .form-control {
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 0.75rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(76, 175, 80, 0.25);
+        }
+
+        .file-upload {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .file-upload-label {
+            display: block;
+            padding: 1rem;
+            background: var(--background-color);
+            border: 2px dashed #ccc;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .file-upload-label:hover {
+            border-color: var(--primary-color);
+            background: #f0f9f0;
+        }
+
+        .file-upload input[type="file"] {
+            opacity: 0;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        .submit-btn {
+            background-color: var(--primary-color);
+            color: rgba(226, 176, 176, 0.897);
+            padding: 0.75rem 2rem;
+            border: none;
+            border-radius: 25px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-top: 1rem;
+        }
+
+        .submit-btn:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        @media (max-width: 768px) {
+            .form-container {
+                margin: 1rem;
+                padding: 1.5rem;
+            }
+        }
+    </style>
+    <title>Add New Health  - Health 's Health  Shop</title>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-sm navbar-custom">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">HealthSync</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" 
+                       data-bs-target="#collapsibleNavbar">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="collapsibleNavbar">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/addHealth ">Add Patient Data</a>
+                    </li>
+                   
+                </ul>
+            </div>
+            <span class="navbar-brand mb-0 h1">Account: <%= acct %></span>
+        </div>
+    </nav>
+    <div class="container py-4">
+        <% if (!loading) { %>
+            <% if (HealthData) { %>
+                <!-- Main content -->
+                <div class="row">
+                    <!-- Left column - Health  image and basic info -->
+                    <div class="col-md-15 d-flex justify-content-center">
+                        <div class="sticky-sidebar text-center">
+                            <div class="details-card p-3">
+                                <img src="../images/<%= HealthData.HealthInfo.name %>.jpeg" class="Health -image mb-3 img-fluid" 
+                                    alt="<%= HealthData.HealthInfo.name %>" style="display: block; margin: auto; max-width: 100%; height: auto;">
+                                <h2 class="text-center"><%= HealthData.name %></h2>
+                                <div class="text-center mt-5">
+                                    <p><strong>Gender:</strong> <%= HealthData.HealthInfo.dateOfBirth %></p>
+                                    <p><strong>Date of Birth:</strong> <%= HealthData.HealthInfo.gender %></p>
+                                    <p><strong>Patient Data Price:</strong> <%= HealthData.HealthInfo.price %> Eth</p>
+                                </div>      
+                            </div>
+                        </div>
+                    </div>
+                    
+
+                    <!-- Right column - Records -->
+                    <div class="col-md-15">
+                        <!-- Ownership Records -->
+                        <div class="details-card mb-4">
+                            <div class="details-card-header d-flex justify-content-between align-items-center">
+                                <h3 class="m-0">Medical History Records</h3>
+                                <a href="/addOwner/<%= HealthData.id %>" class="btn btn-custom">Add  Medical Record</a>                                
+                            </div>
+                            <div class="p-3">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Patient Medical History</th>
+                                            <th>Patient Name</th>
+                                            <th>Last Hospital Visit Date</th>
+                                            <th>Phone</th>
+                                            <th>Email</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <% if (HealthData.ownership && HealthData.ownership.length > 0) { %>
+                                            <% for (i= 0; i < HealthData.ownership.length; i++)  { %>
+                                                <tr> 
+                                                    <td> <%= HealthData.ownership[i].ownerId %></td>
+                                                    <td> <%= HealthData.ownership[i].ownerName %></td>
+                                                    <td> <%= HealthData.ownership[i].transferDate %></td>
+                                                    <td> <%= HealthData.ownership[i].phone %></td>
+                                                    <td> <%= HealthData.ownership[i].email %></td>
+                                                    
+                                                </tr> 
+                                            <% }
+                                        } else { %>
+                                            <tr>
+                                                <td colspan="3">No ownership records available</td>
+                                            </tr>
+                                        <% } %>
+                                        <tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Vaccination Records -->
+                        <div class="details-card mb-4">
+                            <div class="details-card-header d-flex justify-content-between align-items-center">
+                                <h3 class="m-0">Vaccination Records</h3>
+                                <a href="/addVaccination/<%= HealthData.id %>" class="btn btn-custom">Add Vaccination</a> 
+                            </div>
+                            <div class="p-3">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Vaccine Name</th>
+                                            <th>Date Administered</th>
+                                            <th>Doctor name</th>
+                                            <th>Clinic</th>
+                                            <th>Phone</th>
+                                            <th>Email</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                     <% if (HealthData.vaccinations && HealthData.vaccinations.length > 0) { %>
+                                            <% for (i= 1; i < HealthData.vaccinations.length; i++)  { %>
+                                            <tr> 
+                                                <td> <%= HealthData.vaccinations[i].vaccineName %></td>
+                                                <td> <%= HealthData.vaccinations[i].dateAdministered %></td>
+                                                <td> <%= HealthData.vaccinations[i].doctorname %></td>
+                                                <td> <%= HealthData.vaccinations[i].clinic %></td>
+                                                <td> <%= HealthData.vaccinations[i].phone %></td>
+                                                <td> <%= HealthData.vaccinations[i].email %></td>
+                                            </tr> 
+                                            <% }
+                                        } else { %>
+                                            <tr>
+                                                <td colspan="3">No Vaccination records available</td>
+                                            </tr>
+                                        <% } %>                                       
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                       
+                        <!-- Training Records -->
+                        <div class="details-card mb-4">
+                            <div class="details-card-header d-flex justify-content-between align-items-center">
+                                <h3 class="m-0">General Health Records</h3>
+                                <a href="/addTraining/<%= HealthData.id %>" class="btn btn-custom">Add General Record</a> 
+                            </div>
+                            <div class="p-3">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Height(CM)</th>
+                                            <th>Weight(KG)</th>
+                                            <th>Blood Type</th>
+                                            <th>Body Mass Index(BMI)</th>
+                                            <th>Age</th>
+                                            <th>Physical activity Level</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <% if (HealthData.training && HealthData.training.length > 0) { %>
+                                            <% for (i= 0; i < HealthData.training.length; i++)  { %>
+                                            <tr> 
+                                                <td> <%= HealthData.training[i].trainingType %></td>
+                                                <td> <%= HealthData.training[i].traninerName %></td>
+                                                <td> <%= HealthData.training[i].organization %></td>
+                                                <td> <%= HealthData.training[i].phone %></td>
+                                                <td> <%= HealthData.training[i].training %></td>
+                                                <td> <%= HealthData.training[i].progress %></td>    
+                                            </tr> 
+                                            <% }
+                                        } else { %>
+                                            <tr>
+                                                <td colspan="3">No General health records available</td>
+                                            </tr>
+                                        <% } %>                                
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            <% } else { %>
+                <div class="alert alert-warning">No Data found.</div>
+            <% } %>
+        <% } else { %>
+            <div class="text-center">
+                <h1>Loading Data...</h1>
+                <div class="spinner-border" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+        <% } %>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+
